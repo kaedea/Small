@@ -167,7 +167,7 @@ class RootPlugin extends BasePlugin {
             def cfg = p.configurations.compile
             def supportDependencies = []
             cfg.dependencies.each { d ->
-                if (d.group == 'com.android.support' && d.version != sv) {
+                if (d.name != 'multidex' && d.group == 'com.android.support' && d.version != sv) {
                     supportDependencies.add(d)
                 }
             }
@@ -298,14 +298,14 @@ class RootPlugin extends BasePlugin {
                 names.each {
                     def file = null
                     def fileName = null
-                    def prj = project.rootProject.project(":$it")
+                    def prj = project.rootProject.project("app:$it")
                     vs = getVersions(prj)
                     if (out.exists()) {
                         def manifest = new XmlParser().parse(prj.android.sourceSets.main.manifestFile)
                         def pkg = manifest.@package
                         if (small.buildToAssets) {
-                            file = new File(out, "${pkg}.apk")
-                            fileName = '*.' + pkg.split('\\.').last() + '.apk'
+                            file = new File(out, "${pkg}.so")
+                            fileName = '*.' + pkg.split('\\.').last() + '.so'
                         } else {
                             fileName = "lib${pkg.replaceAll('\\.', '_')}.so"
                             file = new File(out, fileName)

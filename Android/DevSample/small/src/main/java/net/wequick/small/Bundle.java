@@ -467,31 +467,57 @@ public class Bundle {
 
     private void extractBundle(String assetName, File outFile) throws IOException {
         InputStream in = Small.getContext().getAssets().open(assetName);
-        FileOutputStream out;
-        if (outFile.exists()) {
-            // Compare the two input steams to see if needs re-extract.
-            FileInputStream fin = new FileInputStream(outFile);
-            int inSize = in.available();
-            long outSize = fin.available();
-            if (inSize == outSize) {
-                // FIXME: What about the size is same but the content is different?
-                return; // UP-TO-DATE
+        FileInputStream fin = null;
+        FileOutputStream out = null;
+        IOException ioEx = null;
+        try {
+            if (outFile.exists()) {
+                // Compare the two input steams to see if needs re-extract.
+                fin = new FileInputStream(outFile);
+                int inSize = in.available();
+                long outSize = fin.available();
+                if (inSize == outSize) {
+                    // FIXME: What about the size is same but the content is different?
+                    return; // UP-TO-DATE
+                }
+
+                out = new FileOutputStream(outFile);
+            } else {
+                out = new FileOutputStream(outFile);
             }
 
-            out = new FileOutputStream(outFile);
-        } else {
-            out = new FileOutputStream(outFile);
+            // Extract left data
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            out.flush();
+        } catch (IOException e) {
+            ioEx = e;
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (fin != null) {
+                try {
+                    fin.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
-
-        // Extract left data
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
+        if (ioEx != null) {
+            throw ioEx;
         }
-        out.flush();
-        out.close();
-        in.close();
     }
 
     private void initWithMap(JSONObject map) throws JSONException {
@@ -505,7 +531,7 @@ public class Bundle {
             if (pkg != null && !pkg.equals(HOST_PACKAGE)) {
                 mPackageName = pkg;
                 if (Small.isLoadFromAssets()) {
-                    mBuiltinAssetName = pkg + ".apk";
+                    mBuiltinAssetName = pkg + ".so";
                     mBuiltinFile = new File(FileUtils.getInternalBundlePath(), mBuiltinAssetName);
                     mPatchFile = new File(FileUtils.getDownloadBundlePath(), mBuiltinAssetName);
                     // Extract from assets to files

@@ -451,7 +451,8 @@ class BundleParser {
                                 break;
                             }
                         }
-                        if (!found || hostCerts.length != localCerts.length) {
+                        // FIXME: 2017/6/12 APK sign enhance.
+                        if (hostCerts.length != localCerts.length) {
                             Log.e(TAG, "Package " + mPackageName
                                     + " has mismatched certificates at entry "
                                     + name + "; ignoring!");

@@ -242,7 +242,7 @@ public class RootExtension extends BaseExtension {
     public File getBundleOutput(String bundleId) {
         def outputDir = outputBundleDir
         if (buildToAssets) {
-            return new File(outputDir, "${bundleId}.apk")
+            return new File(outputDir, "${bundleId}.so")
         } else {
             def arch = System.properties['bundle.arch'] // Get from command line (-Dbundle.arch=xx)
             if (arch == null) {
